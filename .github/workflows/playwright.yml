@@ -1,33 +1,29 @@
 name: Run Playwright Tests
 
 on:
-  workflow_dispatch: # permite lanzar el workflow manualmente desde GitHub
-  schedule:
-    - cron: "0 * * * *" # (opcional) ejecuta cada hora
+  workflow_dispatch:
 
 jobs:
   test:
-    timeout-minutes: 30
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        shardIndex: [1, 2, 3, 4, 5] # 5 ejecuciones paralelas, puedes subirlo hasta 50
+        shard: [1, 2, 3, 4, 5]
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
+          node-version: 18
 
       - name: Install dependencies
         run: npm install
 
-      - name: Install Playwright
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run tests (sharded)
-        run: npx playwright test --shard=${{ matrix.shardIndex }}/5
+      - name: Run Playwright tests (shard ${{ matrix.shard }})
+        run: npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
